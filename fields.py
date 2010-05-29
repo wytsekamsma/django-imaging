@@ -1,5 +1,4 @@
 from django.db import models
-from mimetypes import guess_type
 from django.db.models import signals
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
@@ -90,8 +89,8 @@ class ExtendedImageField(models.ImageField):
 			filename, ext = os.path.splitext(os.path.basename(src))
 			if self.sizes:
 				for size in self.sizes:
-					filename = self.generate_filename(instance, '%s_%s%s' % (getattr(instance, self.name).name, size['name'], ext))
-					resized_image_field = ResizedImageField(filename)
+					_filename = self.generate_filename(instance, '%s_%s%s' % (filename, size['name'], ext))
+					resized_image_field = ResizedImageField(_filename)
 					setattr(getattr(instance, self.name), "size_%s" % size['name'], resized_image_field)		
 					
 	def _parse_sizes(self, sizes):
@@ -154,7 +153,7 @@ class ExtendedImageField(models.ImageField):
 			
 	def save_form_data(self, instance, data):
 		if data == '__deleted__':
-			filename = getattr(instance, self.name.path)
+			filename = getattr(instance, self.name).path
 			ext = os.path.splitext(filename)[1].lower().replace('jpg', 'jpeg')
 	
 			if os.path.exists(filename):
@@ -162,12 +161,12 @@ class ExtendedImageField(models.ImageField):
 			setattr(instance, self.name, None)
 				
 			if self.sizes:
-				for size in sizes:
-					src = self.generate_filename(instance, '%s_%s%s' % (self.name, size.name, ext))
-					dst_fullpath = os.path.join(settings.MEDIA_ROOT, dst)
+				for size in self.sizes:
+					src = self.generate_filename(instance, '%s_%s%s' % (self.name, size['name'], ext))
+					src_fullpath = os.path.join(settings.MEDIA_ROOT, src)
 					
-					if os.path.exists(dst_fullpath):
-						os.remove(dst_fullpath)
+					if os.path.exists(src_fullpath):
+						os.remove(src_fullpath)
 		else:
 			super(ExtendedImageField, self).save_form_data(instance, data)
 						
@@ -181,3 +180,6 @@ class ExtendedImageField(models.ImageField):
 		super(ExtendedImageField, self).contribute_to_class(cls, name)
 		signals.post_save.connect(self._rename_resize_image, sender=cls)
 		signals.post_init.connect(self._set_resized_image, sender=cls)
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^imaging\.fields\.ExtendedImageField"])

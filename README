@@ -1,0 +1,27 @@
+django-imaging
+==============
+
+Proof of concept, based on django-stdimage (http://code.google.com/p/django-stdimage/) and django-thumbs (http://code.google.com/p/django-thumbs/).
+Can resize and delete uploaded images.
+
+Usage:
+Replace your current ImageField with ExtendedImageField.
+Add the 'sizes'-attribute with the sizes you want:
+(name (optional) [string], height[int], width[int], crop[boolean, default=True])
+The name attribute is appended to the filename of the image you have uploaded (for example: file_i_uploaded_large.jpg). When no name is supplied the size is used: file_i_uploaded_1200.jpg or file_i_uploaded_100x100.jpg
+When either height or width is zero, it is calculated to match the requested width or height resp. The crop attribute is disabled in this mode (crop=False).
+When crop is set to False, the image will be scaled to fit in the requested frame.
+
+All attributes can be requested via image.size_[name].url/path/size or image.size_[width]x[height].url/path/size
+
+Example:
+image = ExtendedImageField(upload_to="img", sizes=(
+							("large", 1200, 600),
+							("medium", 1200, 0),
+							("thumb", 100,100)
+							("flickr", 500, 500, False)
+						)
+
+Todo:
+- better documentation ;)
+- preferably some tests
