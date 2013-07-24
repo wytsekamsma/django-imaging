@@ -172,7 +172,7 @@ class ExtendedImageField(models.ImageField):
 						
 	def get_db_prep_save(self, value):
 		if value:
-			return super(ExtendedImageField, self).get_db_prep_save(value)
+			return super(ExtendedImageField, self).get_db_prep_save(value, connection=connection)
 		else:
 			return u''
 	
